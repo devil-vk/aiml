@@ -1,0 +1,12 @@
+class Node:
+    def __init__(self, index, cost, visited=False, and_map=False, solved=False):
+        self.index=index
+        self.cost=cost
+        self.visited=visited
+        self.and_map=and_map
+        self.solved=solved
+        self.children=None
+        self.path=None
+    
+    def __str__(self):
+        return f'{self.index}:{self.cost}'
