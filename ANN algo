@@ -1,0 +1,75 @@
+import numpy as np
+X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float)
+Y = np.array(([92], [86], [89]), dtype=float)
+X = X/np.amax(X, axis=0)
+actual_output = Y / 100
+print(X)
+print(actual_output)
+
+def sigmoid(x):
+    return 1/(1 + np.exp(-x))
+
+def derivatives_sigmoid(x):
+    return x * (1 - x)
+
+#initialization
+epoch = 1000
+learning_rate = 0.15
+inputlayer_neurons = 2
+hiddenlayer_neurons = 3
+outputlayer_neurons = 1
+
+# Weight of hidden layer
+wh = np.random.uniform(low=-0.05,high=0.05,size=(inputlayer_neurons, hiddenlayer_neurons))#2x3
+print(wh)
+
+# Bias of hidden layer
+bh = np.random.uniform(low=-0.05,high=0.05,size=(1, hiddenlayer_neurons))
+
+# Weight of output layer
+wo = np.random.uniform(low=-0.05,high=0.05, size=(hiddenlayer_neurons, outputlayer_neurons))
+
+# Bias of output layer
+bo = np.random.uniform(low=-0.05,high=0.05,size=(1, outputlayer_neurons))
+
+# training
+for i in range(epoch):
+    # Sum of (input * weights in hidden layer) + bias of hidden
+    net_h = np.dot(X, wh) + bh
+
+    # Apply Activation Function
+    sigma_h = sigmoid(net_h)
+    # Input to O/P Layer = (O/P of Hidden Layer * weight of O/P Layer) + bias of O/P layer
+    net_o = np.dot(sigma_h, wo) + bo
+    # Apply Activation Function
+    output = sigmoid(net_o)
+    
+ #Backpropagation
+ # Error at Output layer
+    eo = actual_output-output # Error at o/p
+    outgrad = derivatives_sigmoid(output)
+    d_output = eo* outgrad # Errj=Oj(1-Oj)(Tj-Oj)
+    #print("the d_output is",d_output)
+
+# Error at Hidden later
+    eh = d_output.dot(wo.T) # .T means transpose
+    hiddengrad = derivatives_sigmoid(sigma_h) # How much hidden layer wts contributed to error
+    d_hidden = eh * hiddengrad
+    wo += sigma_h.T.dot(d_output) *learning_rate # Dotproduct of nextlayererror and currentlayerop
+    wh += X.T.dot(d_hidden) *learning_rate
+    
+    sum_error = 0
+    
+    for j in range(len(actual_output)):
+        print(output[j],actual_output[j] )
+        sum_error+=((output[j] - actual_output[j])**2)
+    sum_error /=2
+    
+    print(f'Epoch {i} error {sum_error}')
+
+
+
+print("Normalized Input: \n" + str(X))
+print("Actual Output: \n" + str(actual_output))
+print("Predicted Output: \n" ,output)
+
