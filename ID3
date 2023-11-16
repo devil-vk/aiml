@@ -1,0 +1,64 @@
+from collections import Counter
+import math
+import pandas as pd
+df = pd.read_csv('PlayTennis.csv')
+n=len(df) # number of training examples
+df
+
+#calculate entropy
+def entropy(ls):
+    counts  = Counter(x for x in ls)
+    total = len(ls)
+    probs= [x/total for x in counts.values()]
+    E=sum(-p*math.log(p,2) for p in probs)
+    return E
+
+
+def inf_gain(df, a,target):
+    df_split = df.groupby(a)
+    df_agg = df_split.agg({target:[entropy, lambda x: len(x)/n]})[target]
+    df_agg.columns = ['Entropy','Prop']
+    new_entropy = sum(df_agg['Entropy']*df_agg['Prop'])
+    old_entropy = entropy(df[target])
+    return old_entropy-new_entropy
+
+
+def id3(df, target,attr,def_class=None, def_attr='S'):
+    ps = Counter(x for x in df[target])
+    print(f'\n** {ps} **')
+    if len(ps)==1: #return yes or no
+        return next(iter(ps))
+    elif df.empty or (not attr):
+        return def_class
+    else:
+        def_class=max(ps, key=ps.get)
+        print(f'default class {def_class}')
+        gains={}
+        for a in attr:
+            gains[a] = inf_gain(df,a,target)
+            print(f'Inf gain on {a}:{gains[a]:0.03f}')
+        #best attribute
+        best = max(gains, key=gains.get)
+        print(f'Max gain {best}')
+        
+        tree={best:{}} #initialize tree with best attribute
+        attr.remove(best)
+        
+        for av,data in df.groupby(best):
+            #print(av,'\n',data)
+            subtree = id3(data, target,attr,def_class,best)
+            tree[best][av] = subtree
+            print(f'best {best} {av}')
+            print(tree)
+        
+        return tree
+
+
+attr=list(df.columns)
+print(attr)
+attr.remove('PlayTennis')
+print('predicting attributes',attr)
+
+
+tree= id3(df,'PlayTennis',attr)
+
