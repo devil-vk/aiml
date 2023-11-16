@@ -1,0 +1,99 @@
+#import the dataset
+import csv
+import pandas as pd
+df = pd.read_csv('enjoySport.csv')
+df=df.drop(columns=df.columns[0]) #drop the first column
+examples = df.values.tolist()
+print(examples)
+
+domains=[]
+for col in df.iloc[:,:-1]: # exclude target concept column
+    values = list(df[col].unique())
+    domains.append(values)
+
+domains
+
+#general and specific hypothesis
+n=len(domains)
+g0 = tuple('?'*n)
+s0 = tuple('0'*n)
+print (g0, s0)
+
+def more_general(x,y):
+    #returns True if hypothesis is same or more general than y
+    parts=[]
+    for a,b in zip(x,y):
+        mg = a=='?' or (a!='0' and (a==b or b=='0'))
+        parts.append(mg)
+    return all(parts)
+
+#test
+h=('0','0')
+s= ('Warm','Strong')
+more_general(h,s)
+
+def generalization(s,x):
+    nh=[]
+    for a,b in zip(s,x):
+        if b=='?':
+            nh.append('?')
+        else:
+            nh.append('?' if (a!='0' and b!=a) else b)
+    return tuple(nh)
+
+s=('0', '0', '0', '0', '0', '0')
+x =['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same']
+generalization(s,x)
+
+ls = ['a','b']
+set(ls) - {'a'}
+
+def specializations(g,domains,x):
+    spec = []
+    for i in range(len(g)):
+        g_new = list(g)
+        if g[i] =='?':
+            b = domains[i]
+            for b in domains[i]:
+                if b==x[i]: continue
+                g_new[i]=b
+                spec.append(tuple(g_new))
+        elif g[i] !=0:
+            g_new[i] = '0'
+            spec.append(tuple(g_new))
+    return spec
+
+g=('?','?','?','?','?','?')
+x = ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change']
+d = [['Sunny', 'Rainy'],  ['Warm', 'Cold'],  ['Normal', 'High'],  ['Strong'],
+ ['Warm', 'Cool'],  ['Same', 'Change']]
+specializations(g,d, x)
+
+G=set()
+G.add(g0)
+
+S=s0
+
+i=0
+print(f'Iteration {i}: \n S{i}:{set(S)} \n G{i}:{G}')
+
+for ex in examples:
+    i=i+1
+    #print(ex[:])
+    x, cx = ex[:-1], ex[-1]
+    if cx == 'Y': # positive example
+        G={g for g in G if more_general(g,x)}
+        if not more_general(S,x):
+            S = generalization(S,x)
+    else:
+        G_prev=list(G)
+        for g in G_prev:
+            if more_general(g,x):
+                G.remove(g)
+                min_spec = specializations(g,domains,x)
+                G.update(h for h in min_spec if more_general(h,S))
+                G.difference_update([h for h in G
+                if any([more_general(g1,h) for g1 in G if g1!=h])])
+
+    print(f'\nIteration {i}: \n S{i}:{set(S)} \n G{i}:{G}')
+
