@@ -1,0 +1,54 @@
+fname="pima-indians-diabetes.csv"
+import pandas as pd
+import numpy as np
+import math
+
+df = pd.read_csv(fname)
+train = df.sample(frac=0.8,random_state=105)
+test = df.drop(train.index)
+print('Total X',len(df),'#train',len(train), '#test',len(test))
+
+outcome_group = train.groupby(df.columns[-1])
+'''
+for k,v in outcome_group:
+    print(k,v)
+'''
+n_attr = len(df.columns)-1 #only for the 8 features
+summaries ={}
+
+for target, x in outcome_group:
+    attr_mv = []
+    mean = list(x.mean(axis=0).values)
+    var = list(x.var(axis=0).values)
+    for i in range(n_attr):
+        attr_mv.append((mean[i],var[i]))
+    summaries[target] = attr_mv
+    print(target)
+    print(summaries)
+
+def calc_pd(x,mean,var):
+    exp = math.exp(-math.pow(x-mean,2)/(2*var))
+    return (1/math.sqrt(2*math.pi*var))*exp
+
+def calc_pd_class(summaries, X_vec):
+    probabilities={}
+    for target,mv in summaries.items():
+        probabilities[target] = 1
+        for i in range(len(mv)): # fore every attrb
+            mean,var = mv[i]
+            x=X_vec[i]
+            probabilities[target]*=calc_pd(x,mean,var)
+        print(target,probabilities)
+    return probabilities
+
+def predict(summaries, X_vec):
+    prob = calc_pd_class(summaries, X_vec)
+    bestLabel=max(prob,key=prob.get)
+    bestProb = max(prob.values())
+    return bestLabel
+
+testSet = test.values.tolist()
+predictions=[]
+for i in range(len(test)):
+    result = predict(summaries,testSet[i])
+    predictions.append(result)
