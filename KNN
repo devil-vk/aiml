@@ -1,0 +1,77 @@
+#import libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+#load iris dataset
+from sklearn.datasets import load_iris
+iris=load_iris()
+X=iris.data # features
+y=iris.target # target
+
+#print description
+print(iris.DESCR)
+
+#split the dataset into train and test data
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split (X, y, test_size=0.20, random_state =23)
+print(iris.data.shape)
+print('Training Set', len(X_train))
+print('Test Set', len(X_test))
+
+#to train the model
+from sklearn.neighbors import KNeighborsClassifier
+knn=KNeighborsClassifier(n_neighbors=3)
+# Try with n_neighbors=60, n_neighbors=5
+# Check if it is overfitting or underfitting the model.
+knn.fit(X_train,y_train)
+
+
+#make prediction on test data, Classify
+y_pred=knn.predict(X_test)
+print(y_pred)
+
+#compare the accuracy between the predicted and the actual output y_test
+from sklearn import metrics
+from sklearn.metrics import classification_report, confusion_matrix
+
+print("accuracy=",metrics.accuracy_score(y_pred,y_test))
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+targets ={0:'setosa',1:'versicolor',2:'virginica'}
+print(f'ID \t {"Actual":10s} \t\t {"Predicted":10s} \
+      \t Correct?')
+i=1
+for yt,yp in zip (y_test, y_pred):
+    correct='yes' if yt==yp else 'no**'
+
+    print(f'{i} \t{targets.get(yt):10s} \t \
+          {targets.get(yp):10s} \t {correct}')
+    i+=1
+
+
+#Visualization
+
+from mlxtend.plotting import plot_decision_regions
+from sklearn.datasets import load_iris
+from sklearn.neighbors import KNeighborsClassifier
+iris=load_iris()
+X = pd.DataFrame(iris.data)
+X.columns = ['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']
+Y = pd.DataFrame(iris.target)
+Y.columns = ['Targets']
+
+k=1
+import matplotlib.pyplot as plt
+x = X[['Petal_Width', 'Petal_Length']].values
+y = Y['Targets'].astype(int).values
+clf = KNeighborsClassifier(n_neighbors=k)
+clf.fit(x, y)
+# Plotting decision region
+plot_decision_regions(x, y, clf=clf, legend=10)
+# Adding axes annotations
+plt.xlabel('Petal Width')
+plt.ylabel('Petal Height')
+plt.title(f'Knn with K={k}')
+plt.show()
+
