@@ -3,7 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 #load iris dataset
+from sklearn import metrics
 from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
 iris=load_iris()
 X=iris.data # features
 y=iris.target # target
@@ -12,27 +17,20 @@ y=iris.target # target
 print(iris.DESCR)
 
 #split the dataset into train and test data
-from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split (X, y, test_size=0.20, random_state =23)
 print(iris.data.shape)
 print('Training Set', len(X_train))
 print('Test Set', len(X_test))
 
 #to train the model
-from sklearn.neighbors import KNeighborsClassifier
 knn=KNeighborsClassifier(n_neighbors=3)
-# Try with n_neighbors=60, n_neighbors=5
-# Check if it is overfitting or underfitting the model.
 knn.fit(X_train,y_train)
-
 
 #make prediction on test data, Classify
 y_pred=knn.predict(X_test)
 print(y_pred)
 
 #compare the accuracy between the predicted and the actual output y_test
-from sklearn import metrics
-from sklearn.metrics import classification_report, confusion_matrix
 
 print("accuracy=",metrics.accuracy_score(y_pred,y_test))
 print(confusion_matrix(y_test, y_pred))
