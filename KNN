@@ -49,29 +49,3 @@ for yt,yp in zip (y_test, y_pred):
           {targets.get(yp):10s} \t {correct}')
     i+=1
 
-
-#Visualization
-
-from mlxtend.plotting import plot_decision_regions
-from sklearn.datasets import load_iris
-from sklearn.neighbors import KNeighborsClassifier
-iris=load_iris()
-X = pd.DataFrame(iris.data)
-X.columns = ['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']
-Y = pd.DataFrame(iris.target)
-Y.columns = ['Targets']
-
-k=1
-import matplotlib.pyplot as plt
-x = X[['Petal_Width', 'Petal_Length']].values
-y = Y['Targets'].astype(int).values
-clf = KNeighborsClassifier(n_neighbors=k)
-clf.fit(x, y)
-# Plotting decision region
-plot_decision_regions(x, y, clf=clf, legend=10)
-# Adding axes annotations
-plt.xlabel('Petal Width')
-plt.ylabel('Petal Height')
-plt.title(f'Knn with K={k}')
-plt.show()
-
